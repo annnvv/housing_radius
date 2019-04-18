@@ -1,4 +1,4 @@
-  library(rgdal)
+  #Step 3: Aggregate data by zipcode and property type
   
   # load data
   data <- read.csv("redfin_clean_small.csv", header = TRUE, stringsAsFactors = FALSE)
