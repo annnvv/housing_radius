@@ -1,3 +1,4 @@
+  # Step 2: Data Cleaning
   library(leaflet)
 
   # get a list of all file in this directory
