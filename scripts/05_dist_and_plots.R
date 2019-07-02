@@ -5,7 +5,7 @@
   data <- read.csv("02_redfin_clean_small.csv", 
                    header = TRUE, 
                    stringsAsFactors = FALSE)
-  
+  data$price_per_sqft <- data$price/data$square.feet
   #coordinate for lincoln memorial
   lincoln <- c(-77.050219, 38.889218)
 
@@ -16,20 +16,48 @@
   data$dist_2_lincoln <- (dist_m/1000)
   # add the meters (might need it, not sure)
   data$dist_2_lincoln_m <- dist_m
+  
+  data$dist_2lincoln_mi <- round(dist_m*0.000621371, digit = 4)
 
   rm(dist_m) 
   
-  summary(data$price)
+### HEADING 1
+  # fit a linear regression
+  linearMod_price_sqft <- lm(square.feet ~ price, data = data)  # build linear regression model on full data
+  summary(linearMod_price_sqft)
+  
+  # plot the data points
+  ggplot(data = data, aes(x = data$square.feet, y = data$price/1000, 
+                          shape = data$state, colour = data$property.type)) + 
+    geom_point(alpha = 0.7) +
+    theme_bw() +
+    #ggtitle("")+
+    xlab("Listed Square Feet") +
+    ylab("Listed Price (in thousands of dollars)") +
+    labs(shape = "'State'", colour = "Property Type") +
+    scale_shape_manual(values = c(0, 16, 3))
 
+### HEADING 2    
+  summary(data$price)
+  
   # fit a linear regression
   linearMod_price <- lm(dist_2_lincoln_m ~ price, data = data)  # build linear regression model on full data
   summary(linearMod_price)
   
   # plot the data points
-  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$price/100000, colour = data$state)) +
-    geom_point() +
-    theme_bw()
+  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$price/1000, 
+                          shape = data$state, colour = data$property.type)) + 
+    geom_point(alpha = 0.7) +
+    theme_bw() +
+    #ggtitle("")+
+    xlab("Distance to Lincoln Memorial (in kilometers)") +
+    ylab("Listed Price (in thousands of dollars)") +
+    labs(shape = "'State'", colour = "Property Type") +
+    scale_shape_manual(values = c(0, 16, 3)) +
+    # limit graph to show only property below $1.5 million
+    ylim(0, 1500)
   
+### HEADING 3 
   summary(data$square.feet)
   
   # fit a linear regression
@@ -37,10 +65,51 @@
   summary(linearMod_sqft)
 
   # plot the data points
-  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$square.feet, colour = data$state)) +
-    geom_point()+
-    theme_bw()
+  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$square.feet, 
+                          shape = data$state, colour = data$property.type)) +
+    geom_point(alpha = 0.7) +
+    theme_bw() +
+    #ggtitle("") +
+    xlab("Distance to Lincoln Memorial (in kilometers)") +
+    ylab("Listing square feet") +
+    scale_shape_manual(values = c(0, 16, 3)) +
+    labs(shape = "'State'", colour = "Property Type") +
+    # limit the graph to show properties below 10,000 square feet
+    ylim(0, 10000)
+
+### HEADING 4 
+  summary(data$price_per_sqft)
   
+  # fit a linear regression
+  linearMod_psqft <- lm(dist_2_lincoln ~ price_per_sqft, data = data)  
+  summary(linearMod_psqft)
   
-   
- 
+  # plot the data points
+  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$price_per_sqft, 
+                          shape = data$state, colour = data$property.type)) +
+    geom_point(alpha = 0.7)+
+    theme_bw() +
+    #ggtitle("")+
+    xlab("Distance to Lincoln Memorial (in kilometers)") +
+    ylab("Price per square foot") +
+    labs(shape = "'State'", colour = "Property Type") +
+    scale_shape_manual(values = c(0, 16, 3)) +
+    ylim(0,2000)
+  
+### HEADING 5 
+  data2 <- data[data$price <= 1000000 & data$square.feet <= 5000, ]
+  # fit a linear regression
+  linearMod_price_sqft <- lm(square.feet ~ price, data = data2)  # build linear regression model on full data
+  summary(linearMod_price_sqft)
+  
+  # plot the data points
+  ggplot(data = data2, aes(x = data2$square.feet, y = data2$price/1000, 
+                          shape = data2$state, colour = data2$property.type)) + 
+    geom_point(alpha = 0.7) +
+    theme_bw() +
+    #ggtitle("")+
+    xlab("Listed Square Feet") +
+    ylab("Listed Price (in thousands of dollars)") +
+    labs(shape = "'State'", colour = "Property Type") +
+    scale_shape_manual(values = c(0, 16, 3))
+  
