@@ -1,4 +1,5 @@
   # Step 1: Gather the data
+
   library(rvest)
 
   dc_zipcodes_url <- "https://www.zillow.com/browse/homes/dc/district-of-columbia-county/" 

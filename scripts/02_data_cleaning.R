@@ -1,4 +1,5 @@
   # Step 2: Data Cleaning
+  
   library(leaflet)
 
   # get a list of all file in this directory
@@ -12,8 +13,7 @@
     one_file <- read.csv(i, stringsAsFactors = FALSE, header = TRUE)
     redfin_raw <- rbind(redfin_raw, one_file)
   }
-  rm(i, one_file)
-  
+  rm(i, one_file, redfin_files)
   
   #### DATA CLEANING ####
   redfin <- redfin_raw
@@ -77,9 +77,9 @@
     addCircleMarkers(lng = redfin$longitude, lat = redfin$latitude, radius = 0.5, color = "blue")
 
   # write a .csv with all the variables
-  write.csv(redfin, "redfin_clean_all.csv", row.names = FALSE) 
+  write.csv(redfin, "data/02_redfin_clean_all.csv", row.names = FALSE) 
   
   # write a .csv with only necessary variables
-  write.csv(redfin[, c("property.type", "zip_code", "price", "square.feet", "latitude", "longitude")], 
-            "redfin_clean_small.csv", row.names = FALSE)
+  write.csv(redfin[, c("property.type", "city", "state", "zip_code", "price", "square.feet", "latitude", "longitude")], 
+            "02_redfin_clean_small.csv", row.names = FALSE)
   
