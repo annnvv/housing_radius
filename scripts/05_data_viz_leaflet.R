@@ -1,5 +1,5 @@
   # Step 4: Data Visualization
-
+  
   library(leaflet)
   library(rgdal)
   
@@ -37,8 +37,7 @@
     addLegend("bottomright", pal = pal, values = ~median_sq_ft.Condo_Co_op,
               title = "Condos Mean Square feet by Zipcode",
               #labFormat = labelFormat(prefix = "$"),
-              opacity = 1)
-  %>%
+              opacity = 1) %>%
     addLayersControl(overlayGroups = c("Battle", "Remote violence","Riots/Protests", "Violence against civilians"),
                      options = layersControlOptions(collapsed = FALSE))
   

@@ -2,13 +2,13 @@
   library(ggplot2)
   
   #load small dataset
-  data <- read.csv("02_redfin_clean_small.csv", 
+  data <- read.csv("data/02_redfin_clean_small.csv", 
                    header = TRUE, 
                    stringsAsFactors = FALSE)
   data$price_per_sqft <- data$price/data$square.feet
   #coordinate for lincoln memorial
   lincoln <- c(-77.050219, 38.889218)
-
+  
   # create distance matrix from each listing to the lincoln memorial (units = meters)
   dist_m <- distm(data[ c("longitude", "latitude")], lincoln, fun =  distGeo)
   
@@ -18,10 +18,10 @@
   data$dist_2_lincoln_m <- dist_m
   
   data$dist_2lincoln_mi <- round(dist_m*0.000621371, digit = 4)
-
+  
   rm(dist_m) 
   
-### HEADING 1
+  ### HEADING 1
   # fit a linear regression
   linearMod_price_sqft <- lm(square.feet ~ price, data = data)  # build linear regression model on full data
   summary(linearMod_price_sqft)
@@ -36,8 +36,8 @@
     ylab("Listed Price (in thousands of dollars)") +
     labs(shape = "'State'", colour = "Property Type") +
     scale_shape_manual(values = c(0, 16, 3))
-
-### HEADING 2    
+  
+  ### HEADING 2    
   summary(data$price)
   
   # fit a linear regression
@@ -57,13 +57,13 @@
     # limit graph to show only property below $1.5 million
     ylim(0, 1500)
   
-### HEADING 3 
+  ### HEADING 3 
   summary(data$square.feet)
   
   # fit a linear regression
   linearMod_sqft <- lm(dist_2_lincoln_m ~ square.feet, data = data)  # build linear regression model on full data
   summary(linearMod_sqft)
-
+  
   # plot the data points
   ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$square.feet, 
                           shape = data$state, colour = data$property.type)) +
@@ -76,8 +76,8 @@
     labs(shape = "'State'", colour = "Property Type") +
     # limit the graph to show properties below 10,000 square feet
     ylim(0, 10000)
-
-### HEADING 4 
+  
+  ### HEADING 4 
   summary(data$price_per_sqft)
   
   # fit a linear regression
@@ -85,18 +85,20 @@
   summary(linearMod_psqft)
   
   # plot the data points
-  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$price_per_sqft, 
+  ggplot(data = data, aes(x = data$price_per_sqft, 
+                          y = 1/data$dist_2_lincoln, 
                           shape = data$state, colour = data$property.type)) +
     geom_point(alpha = 0.7)+
     theme_bw() +
     #ggtitle("")+
-    xlab("Distance to Lincoln Memorial (in kilometers)") +
-    ylab("Price per square foot") +
+    ylab("Distance to Lincoln Memorial (in kilometers)") +
+    xlab("Price per square foot") +
     labs(shape = "'State'", colour = "Property Type") +
     scale_shape_manual(values = c(0, 16, 3)) +
-    ylim(0,2000)
+    ylim(0, 0.5) + 
+    xlim(0, 1000)
   
-### HEADING 5 
+  ### HEADING 5 
   data2 <- data[data$price <= 1000000 & data$square.feet <= 5000, ]
   # fit a linear regression
   linearMod_price_sqft <- lm(square.feet ~ price, data = data2)  # build linear regression model on full data
@@ -104,7 +106,7 @@
   
   # plot the data points
   ggplot(data = data2, aes(x = data2$square.feet, y = data2$price/1000, 
-                          shape = data2$state, colour = data2$property.type)) + 
+                           shape = data2$state, colour = data2$property.type)) + 
     geom_point(alpha = 0.7) +
     theme_bw() +
     #ggtitle("")+
@@ -112,4 +114,3 @@
     ylab("Listed Price (in thousands of dollars)") +
     labs(shape = "'State'", colour = "Property Type") +
     scale_shape_manual(values = c(0, 16, 3))
-  
