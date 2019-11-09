@@ -6,18 +6,18 @@
                    header = TRUE, 
                    stringsAsFactors = FALSE)
   data$price_per_sqft <- data$price/data$square.feet
-  #coordinate for lincoln memorial
-  lincoln <- c(-77.050219, 38.889218)
-  
-  # create distance matrix from each listing to the lincoln memorial (units = meters)
-  dist_m <- distm(data[ c("longitude", "latitude")], lincoln, fun =  distGeo)
+  #coordinate for US Capitol
+  capitol <- c(-77.008991, 38.890089)
+
+  # create distance matrix from each listing to the US Capitol (units = meters)
+  dist_m <- distm(data[ c("longitude", "latitude")], capitol, fun =  distGeo)
   
   # add to dataframe and convert to kilometers
-  data$dist_2_lincoln <- (dist_m/1000)
+  data$dist_2_capitol <- (dist_m/1000)
   # add the meters (might need it, not sure)
-  data$dist_2_lincoln_m <- dist_m
+  data$dist_2_capitol_m <- dist_m
   
-  data$dist_2lincoln_mi <- round(dist_m*0.000621371, digit = 4)
+  data$dist_2capitol_mi <- round(dist_m*0.000621371, digit = 4)
   
   rm(dist_m) 
   
@@ -41,16 +41,16 @@
   summary(data$price)
   
   # fit a linear regression
-  linearMod_price <- lm(dist_2_lincoln_m ~ price, data = data)  # build linear regression model on full data
+  linearMod_price <- lm(dist_2_capitol_m ~ price, data = data)  # build linear regression model on full data
   summary(linearMod_price)
   
   # plot the data points
-  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$price/1000, 
+  ggplot(data = data, aes(x = data$dist_2_capitol, y = data$price/1000, 
                           shape = data$state, colour = data$property.type)) + 
     geom_point(alpha = 0.7) +
     theme_bw() +
     #ggtitle("")+
-    xlab("Distance to Lincoln Memorial (in kilometers)") +
+    xlab("Distance to US Capitol (in kilometers)") +
     ylab("Listed Price (in thousands of dollars)") +
     labs(shape = "'State'", colour = "Property Type") +
     scale_shape_manual(values = c(0, 16, 3)) +
@@ -61,16 +61,16 @@
   summary(data$square.feet)
   
   # fit a linear regression
-  linearMod_sqft <- lm(dist_2_lincoln_m ~ square.feet, data = data)  # build linear regression model on full data
+  linearMod_sqft <- lm(dist_2_capitol_m ~ square.feet, data = data)  # build linear regression model on full data
   summary(linearMod_sqft)
   
   # plot the data points
-  ggplot(data = data, aes(x = data$dist_2_lincoln, y = data$square.feet, 
+  ggplot(data = data, aes(x = data$dist_2_capitol, y = data$square.feet, 
                           shape = data$state, colour = data$property.type)) +
     geom_point(alpha = 0.7) +
     theme_bw() +
     #ggtitle("") +
-    xlab("Distance to Lincoln Memorial (in kilometers)") +
+    xlab("Distance to US Capitol (in kilometers)") +
     ylab("Listing square feet") +
     scale_shape_manual(values = c(0, 16, 3)) +
     labs(shape = "'State'", colour = "Property Type") +
@@ -81,22 +81,24 @@
   summary(data$price_per_sqft)
   
   # fit a linear regression
-  linearMod_psqft <- lm(dist_2_lincoln ~ price_per_sqft, data = data)  
+  linearMod_psqft <- lm(dist_2_capitol ~ price_per_sqft, data = data)  
   summary(linearMod_psqft)
   
   # plot the data points
-  ggplot(data = data, aes(x = data$price_per_sqft, 
-                          y = 1/data$dist_2_lincoln, 
-                          shape = data$state, colour = data$property.type)) +
+  ggplot(data = data, aes(y = data$price_per_sqft, 
+                          x = 1/data$dist_2_capitol, 
+                          shape = data$state, 
+                          colour = data$property.type)) +
     geom_point(alpha = 0.7)+
     theme_bw() +
     #ggtitle("")+
-    ylab("Distance to Lincoln Memorial (in kilometers)") +
-    xlab("Price per square foot") +
+    xlab("Distance to US Capitol (in kilometers)") +
+    ylab("Price per square foot") +
     labs(shape = "'State'", colour = "Property Type") +
     scale_shape_manual(values = c(0, 16, 3)) +
-    ylim(0, 0.5) + 
-    xlim(0, 1000)
+    facet_grid(. ~ state) +
+    xlim(0, 0.75) + 
+    ylim(0, 2500)
   
   ### HEADING 5 
   data2 <- data[data$price <= 1000000 & data$square.feet <= 5000, ]
