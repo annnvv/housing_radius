@@ -1,0 +1,233 @@
+---
+title: "Housing Prices in the DC metro area"
+author: "Anna Vasylytsya"
+date: "11/8/2019"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, 
+                      warning = FALSE, error = FALSE)
+```
+
+```{r packages}
+library(geosphere)
+library(stargazer)
+library(mapdeck)
+```
+
+```{r path, echo = FALSE}
+proj_path <- "C:/Users/Anna V/Documents/GitHub/housing_radius"
+```
+
+```{r token, echo = FALSE}
+my_token <- scan(paste0(proj_path, "/_auth/mapbox_token.txt"), 
+                 character(), quote = "")
+mapdeck::set_token(my_token)
+```
+
+# Background and Description
+```{r load_all_data}
+data <- read.csv(paste0(proj_path, "/data/02_redfin_clean_all.csv"), 
+                 header = TRUE, stringsAsFactors = FALSE)
+```
+
+This data was manually downloaded from Redfin on September 16th, 2019, therefore the data covers listings on that date. These listings cover `r length(unique(data$zip_code))` zipcodes in DC, Maryland, and Virginia.
+
+This dataset contains `r format(nrow(data), big.mark=",")` listings. The average listing price is \$`r format(round(mean(data$price, na.rm = TRUE), digit = 0), big.mark=",")`. The average listing square footage is `r format(round(mean(data$square.feet, na.rm = TRUE), digit = 0), big.mark = ",")`. The most expensive property was listed for \$`r format(max(data$price), big.mark = ",")`. The largest property listed had `r format(max(data$square.feet, na.rm = TRUE), big.mark = ",")` square feet.
+
+There are `r format(nrow(data[data$price<5000000, ]), big.mark = ",")` listings that are below \$2 million. For listings under two million dollars, the average listing price is \$ `r format(round(mean(data[data$price<5000000,  "price"], na.rm = TRUE), digit = 0), big.mark = ",")` and the average listing square footage is `r format(round(mean(data[data$price<5000000,  "square.feet"], na.rm = TRUE), digit = 0), big.mark = ",")`.
+
+```{r subset_data}
+data <- data[ , c("property.type", "price", "square.feet", "price_per_sq_ft","latitude", "longitude", "url")]
+
+price <- data[ , c("property.type", "price", "latitude", "longitude")]  
+names(price)[1] <- "Property Type"
+price_u2m <- price[price$price < 2000000, ]
+
+sqft <- data[ , c("property.type", "price", "square.feet", "latitude", "longitude")]  
+  names(sqft)[1] <- c("Property Type")
+sqft_u2m_price <- sqft[sqft$price < 2000000, ]
+sqft <- sqft[ , c("Property Type", "square.feet", "latitude", "longitude")]  
+
+price_sqft <- data[ , c("property.type", "price","price_per_sq_ft", "latitude", "longitude")]  
+  names(price_sqft)[1] <- c("Property Type")
+price_sqft_u2m <- price_sqft[price_sqft$price < 2000000, ]
+price_sqft <- price_sqft[ , c("Property Type", "price_per_sq_ft", "latitude", "longitude")]  
+```
+
+```{r dist_matrix}
+#coordinate for US Capitol
+capitol <- c(-77.008991, 38.890089)
+
+# create distance matrix from each listing to the US Capitol (units = meters)
+dist_m <- distm(data[ c("longitude", "latitude")], capitol, fun =  distGeo)
+  
+# add to dataframe and convert to kilometers
+data$dist_km <- (dist_m/1000)
+
+rm(dist_m)
+```
+
+# Listing Price 
+### All Listings
+```{r all_price_reg}
+lm_price_all <- lm(price ~ dist_km, data = data)
+lm_price_condo <- lm(price ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
+lm_price_town <- lm(price ~ dist_km, data = data[data$property.type == "Townhouse", ])
+lm_price_house <- lm(price ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+                                                  | data$property.type == "Multi-Family (2-4 Unit)", ])
+```
+
+```{r all_price_reg_results}
+stargazer(lm_price_all, lm_price_condo, lm_price_town,lm_price_house, 
+          type = "text", digits = 1, 
+          column.labels = c("All", "Condo", "Townhouse", "House"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "List Price",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r all_price_map}
+# mapdeck(
+#   style = mapdeck_style('light')) %>%
+#   add_column(
+#     data = price
+#     , lat = "latitude"
+#     , lon = "longitude"
+#     , radius = 75
+#     , elevation = "price"
+#     , elevation_scale = 0.001
+#     , layer_id = "price"
+#     , auto_highlight = TRUE
+#     , update_view = TRUE
+#     , fill_colour = "Property Type"
+#     , fill_opacity = 0.65
+#     , tooltip = "price"
+#     , legend = TRUE) %>%
+#   mapdeck_view(location = c(-77.008989, 38.890468), pitch = 60, zoom = 9)  
+```
+
+### Listings under $2 million
+```{r price_under2M_reg}
+lm_price_all2 <- lm(price ~ dist_km, data = data[data$price <2000000, ])
+lm_price_condo2 <- lm(price ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_price_town2 <- lm(price ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_price_house2 <- lm(price ~ dist_km, data = data[(data$property.type == "Single Family Residential" 
+                                                    | data$property.type == "Multi-Family (2-4 Unit)") & data$price <2000000, ])
+
+stargazer(lm_price_all2, lm_price_condo2, lm_price_town2,lm_price_house2, 
+          type = "text", digits = 1, 
+          column.labels = c("All <2M", "Condo <2M", "Townhouse <2M", "House <2M"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "List Price",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r price_under2M_reg_results}
+```
+
+```{r price_under2M_map}
+
+```
+
+# Square Feet
+### All Listings
+```{r all_sqft_reg}
+lm_sqft_all <- lm(square.feet ~ dist_km, data = data)
+lm_sqft_condo <- lm(square.feet ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
+lm_sqft_town <- lm(square.feet ~ dist_km, data = data[data$property.type == "Townhouse", ])
+lm_sqft_house <- lm(square.feet ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+                                                       | data$property.type == "Multi-Family (2-4 Unit)", ])
+
+stargazer(lm_sqft_all, lm_sqft_condo, lm_sqft_town,lm_sqft_house, 
+          type = "text", digits = 1, 
+          column.labels = c("All", "Condo", "Townhouse", "House"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "Listing Square Feet",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r all_sqft_reg_results}
+```
+
+```{r all_sqft_map}
+
+```
+
+### Listings under $2 million
+```{r sqft_under2M_reg}
+lm_sqft_all2 <- lm(square.feet ~ dist_km, data = data[data$price <2000000, ])
+lm_sqft_condo2 <- lm(square.feet ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_sqft_town2 <- lm(square.feet ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_sqft_house2 <- lm(square.feet ~ dist_km, data = data[(data$property.type == "Single Family Residential" 
+                                                        | data$property.type == "Multi-Family (2-4 Unit)") 
+                                                        & data$price <2000000, ])
+
+stargazer(lm_sqft_all2, lm_sqft_condo2, lm_sqft_town2,lm_sqft_house2, 
+          type = "text", digits = 1, 
+          column.labels = c("All", "Condo", "Townhouse", "House"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "Listing Square Feet",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r sqft_under2M_reg_results}
+```
+
+```{r sqft_under2M_map}
+
+```
+
+# Price per Square Foot
+
+### All Listings
+```{r all_psqft_reg}
+lm_psqft_all <- lm(price_per_sq_ft ~ dist_km, data = data)
+lm_psqft_condo <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
+lm_psqft_town <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Townhouse", ])
+lm_psqft_house <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+                                                            | data$property.type == "Multi-Family (2-4 Unit)", ])
+
+stargazer(lm_psqft_all, lm_psqft_condo, lm_psqft_town,lm_psqft_house, 
+          type = "text", digits = 1, 
+          column.labels = c("All", "Condo", "Townhouse", "House"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "Price per Square Foot",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r all_psqft_reg_results}
+```
+
+```{r all_psqft_map}
+
+```
+
+### Listings under $2 million
+```{r psqft_under2M_reg}
+lm_psqft_all2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$price <2000000, ])
+lm_psqft_condo2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_psqft_town2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_psqft_house2 <- lm(price_per_sq_ft ~ dist_km, data = data[(data$property.type == "Single Family Residential"
+                                                              | data$property.type == "Multi-Family (2-4 Unit)") & data$price <2000000, ])
+
+stargazer(lm_psqft_all2, lm_psqft_condo2, lm_psqft_town2,lm_psqft_house2, 
+          type = "text", digits = 1, 
+          column.labels = c("All", "Condo", "Townhouse", "House"), 
+          covariate.labels = "Distance from US Capitol in km", 
+          dep.var.labels   = "Price per Square Foot",
+          omit.stat = c("f", "ser", "rsq") )
+```
+
+```{r psqft_under2M_reg_results}
+```
+
+```{r psqft_under2M_map}
+
+```
