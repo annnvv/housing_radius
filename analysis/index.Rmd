@@ -77,10 +77,11 @@ rm(dist_m)
 # Listing Price 
 ### All Listings
 ```{r all_price_reg}
-lm_price_all <- lm(price ~ dist_km, data = data)
-lm_price_condo <- lm(price ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
-lm_price_town <- lm(price ~ dist_km, data = data[data$property.type == "Townhouse", ])
-lm_price_house <- lm(price ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+pform <- as.formula(price ~ dist_km)
+lm_price_all <- lm(pform, data = data)
+lm_price_condo <- lm(pform, data = data[data$property.type == "Condo/Co-op", ])
+lm_price_town <- lm(pform, data = data[data$property.type == "Townhouse", ])
+lm_price_house <- lm(pform, data = data[data$property.type == "Single Family Residential" 
                                                   | data$property.type == "Multi-Family (2-4 Unit)", ])
 ```
 
@@ -115,10 +116,10 @@ stargazer(lm_price_all, lm_price_condo, lm_price_town,lm_price_house,
 
 ### Listings under $2 million
 ```{r price_under2M_reg}
-lm_price_all2 <- lm(price ~ dist_km, data = data[data$price <2000000, ])
-lm_price_condo2 <- lm(price ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
-lm_price_town2 <- lm(price ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
-lm_price_house2 <- lm(price ~ dist_km, data = data[(data$property.type == "Single Family Residential" 
+lm_price_all2 <- lm(pform, data = data[data$price <2000000, ])
+lm_price_condo2 <- lm(pform, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_price_town2 <- lm(pform, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_price_house2 <- lm(pform, data = data[(data$property.type == "Single Family Residential" 
                                                     | data$property.type == "Multi-Family (2-4 Unit)") & data$price <2000000, ])
 
 stargazer(lm_price_all2, lm_price_condo2, lm_price_town2,lm_price_house2, 
@@ -139,10 +140,11 @@ stargazer(lm_price_all2, lm_price_condo2, lm_price_town2,lm_price_house2,
 # Square Feet
 ### All Listings
 ```{r all_sqft_reg}
-lm_sqft_all <- lm(square.feet ~ dist_km, data = data)
-lm_sqft_condo <- lm(square.feet ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
-lm_sqft_town <- lm(square.feet ~ dist_km, data = data[data$property.type == "Townhouse", ])
-lm_sqft_house <- lm(square.feet ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+sqft_form <- as.formula(square.feet ~ dist_km)
+lm_sqft_all <- lm(sqft_form, data = data)
+lm_sqft_condo <- lm(sqft_form, data = data[data$property.type == "Condo/Co-op", ])
+lm_sqft_town <- lm(sqft_form, data = data[data$property.type == "Townhouse", ])
+lm_sqft_house <- lm(sqft_form, data = data[data$property.type == "Single Family Residential" 
                                                        | data$property.type == "Multi-Family (2-4 Unit)", ])
 
 stargazer(lm_sqft_all, lm_sqft_condo, lm_sqft_town,lm_sqft_house, 
@@ -162,10 +164,10 @@ stargazer(lm_sqft_all, lm_sqft_condo, lm_sqft_town,lm_sqft_house,
 
 ### Listings under $2 million
 ```{r sqft_under2M_reg}
-lm_sqft_all2 <- lm(square.feet ~ dist_km, data = data[data$price <2000000, ])
-lm_sqft_condo2 <- lm(square.feet ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
-lm_sqft_town2 <- lm(square.feet ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
-lm_sqft_house2 <- lm(square.feet ~ dist_km, data = data[(data$property.type == "Single Family Residential" 
+lm_sqft_all2 <- lm(sqft_form, data = data[data$price <2000000, ])
+lm_sqft_condo2 <- lm(sqft_form, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_sqft_town2 <- lm(sqft_form, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_sqft_house2 <- lm(sqft_form, data = data[(data$property.type == "Single Family Residential" 
                                                         | data$property.type == "Multi-Family (2-4 Unit)") 
                                                         & data$price <2000000, ])
 
@@ -188,10 +190,12 @@ stargazer(lm_sqft_all2, lm_sqft_condo2, lm_sqft_town2,lm_sqft_house2,
 
 ### All Listings
 ```{r all_psqft_reg}
-lm_psqft_all <- lm(price_per_sq_ft ~ dist_km, data = data)
-lm_psqft_condo <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Condo/Co-op", ])
-lm_psqft_town <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Townhouse", ])
-lm_psqft_house <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Single Family Residential" 
+psqft_form <- as.formula(price_per_sq_ft ~ dist_km)
+
+lm_psqft_all <- lm(psqft_form, data = data)
+lm_psqft_condo <- lm(psqft_form, data = data[data$property.type == "Condo/Co-op", ])
+lm_psqft_town <- lm(psqft_form, data = data[data$property.type == "Townhouse", ])
+lm_psqft_house <- lm(psqft_form, data = data[data$property.type == "Single Family Residential" 
                                                             | data$property.type == "Multi-Family (2-4 Unit)", ])
 
 stargazer(lm_psqft_all, lm_psqft_condo, lm_psqft_town,lm_psqft_house, 
@@ -211,10 +215,10 @@ stargazer(lm_psqft_all, lm_psqft_condo, lm_psqft_town,lm_psqft_house,
 
 ### Listings under $2 million
 ```{r psqft_under2M_reg}
-lm_psqft_all2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$price <2000000, ])
-lm_psqft_condo2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
-lm_psqft_town2 <- lm(price_per_sq_ft ~ dist_km, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
-lm_psqft_house2 <- lm(price_per_sq_ft ~ dist_km, data = data[(data$property.type == "Single Family Residential"
+lm_psqft_all2 <- lm(psqft_form, data = data[data$price <2000000, ])
+lm_psqft_condo2 <- lm(psqft_form, data = data[data$property.type == "Condo/Co-op" & data$price <2000000, ])
+lm_psqft_town2 <- lm(psqft_form, data = data[data$property.type == "Townhouse" & data$price <2000000, ])
+lm_psqft_house2 <- lm(psqft_form, data = data[(data$property.type == "Single Family Residential"
                                                               | data$property.type == "Multi-Family (2-4 Unit)") & data$price <2000000, ])
 
 stargazer(lm_psqft_all2, lm_psqft_condo2, lm_psqft_town2,lm_psqft_house2, 
