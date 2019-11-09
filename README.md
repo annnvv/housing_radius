@@ -8,3 +8,4 @@
 5. Make sure to read the documentation for installing dev versions (there was solid documentation about installing the dev version for mapdeck).
 
 
+Rmarkdown can be viewed at: https://annnvv.github.io/housing_radius/analysis
