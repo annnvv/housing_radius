@@ -1,3 +1,5 @@
+Status: Work in Progress
+
 <b>Hypothesis</b>: Average housing size (in square feet) increases as housing is farther away from the center of the Washington, DC (proxy Lincoln Memorial) and price roughly the same (or increases slightly, but probably does not decrease).
 
 <b>Lessons Learned</b>:
